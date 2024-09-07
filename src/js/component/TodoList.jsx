@@ -66,35 +66,7 @@ export const TodoList = () => {
     }
   };
 
-  const handleDeleteTodo = async () => {
-    const uri = `${host}/todos/${userData.id}`;
-    const options = {
-      method: "DELETE",
-    };
-
-    try {
-      const response = await fetch(uri, options);
-      if (!response.ok) {
-        console.log(
-          "Error deleting todo:",
-          response.status,
-          response.statusText
-        );
-        return;
-      }
-      console.log(`To-do with ID ${todoId} deleted successfully.`);
-
-      // update state on list
-      setUserData((prevUserData) => ({
-        ...prevUserData,
-        todos: prevUserData.todos.filter((todos) => todos.id !== todosId),
-      }));
-    } catch (error) {
-      console.error("An error occurred while deleting the to-do item:", error);
-    }
-  };
-
-  //POST request
+  //POST user request
   const handleCreateUserButton = async (event) => {
     event.preventDefault();
     const uri = `${host}/users/${createUser}`;
@@ -112,7 +84,7 @@ export const TodoList = () => {
     await fetchUser(createUser);
   };
 
-  //once POST is done, GET username to update list
+  //after POST user > GET user to update todo list
   const fetchUser = async (username) => {
     const uri = `${host}/users/${username}`;
     const options = {
@@ -128,7 +100,7 @@ export const TodoList = () => {
     setUserData(data);
   };
 
-  //GET request DONE
+  //GET user request
   const handleGetUserButton = async () => {
     const uri = `${host}/users/${getUser}`;
     const options = {
@@ -145,26 +117,51 @@ export const TodoList = () => {
     setGetUser("");
   };
 
-  // PUT request
+  // PUT item request
   const handleItem = async () => {
     const uri = `${host}/users/${userData.label}`;
     const options = {
       method: "POST",
     };
   };
+  // DELETE item
+  const handleDeleteTodo = async (todoId) => {
+    const uri = `${host}/todos/${todoId}`;
+    const options = {
+      method: "DELETE",
+    };
+    try {
+      const response = await fetch(uri, options);
+      if (!response.ok) {
+        console.log(
+          "Error deleting todo:",
+          response.status,
+          response.statusText
+        );
+        return;
+      }
+      console.log(`Todo ${todoId} deleted successfully.`);
+
+      // Refresh the user data to reflect the updated todo list
+      await fetchUser(userData.name);
+    } catch (error) {
+      console.error("An error occurred while deleting the todo:", error);
+    }
+  };
+
   // JSX
   return (
-    <div className="container">
+    <div className="container bg-light p-3">
       <div className="row">
         <div className="col">
           <h1>To-Do List</h1>
         </div>
       </div>
       {/* CREATE USER BUTTON */}
-      <div className="row">
+      <div className="row m-2">
         <div className="col">
           <input
-            className="button"
+            className="button me-3"
             type="button"
             value="Create User"
             onClick={handleCreateUserButton}
@@ -180,10 +177,10 @@ export const TodoList = () => {
         </div>
       </div>
       {/* RETRIEVE USER BUTTON */}
-      <div className="row">
+      <div className="row m-2 pb-2">
         <div className="col">
           <input
-            className="button"
+            className="button me-2"
             type="button"
             value="Retrieve User"
             onClick={handleGetUserButton}
@@ -204,7 +201,7 @@ export const TodoList = () => {
         <div>
           <div className="row">
             <div className="col d-flex">
-              <h2>User: {userData.name} </h2>
+              <h3>current user: {userData.name} </h3>
               <span>
                 <button
                   className="btn btn-danger"
@@ -218,11 +215,11 @@ export const TodoList = () => {
           </div>
 
           {/* ADD TO-DO Item */}
-          <div className="row">
+          <div className="row pt-2">
             <div className="col">
               <input
                 type="text"
-                className="form-control"
+                className="pb-2 form-control"
                 placeholder="add a to-do item"
                 value={todoItem}
                 onChange={handleAddTodo}
@@ -231,14 +228,17 @@ export const TodoList = () => {
             </div>
           </div>
           {/* DISPLAY TO-DO items */}
-          <div className="row">
+          <div className="row mx-3">
             <div className="col">
               <ul>
                 {userData.todos.map((todo) => {
                   return (
                     <li key={todo.id}>
                       {todo.label}
-                      <span onClick={handleDeleteTodo(todos.id)}>
+                      <span
+                        style={{ cursor: "pointer" }}
+                        onClick={() => handleDeleteTodo(todo.id)}
+                      >
                         <i className="fa-solid fa-circle-minus"></i>
                       </span>
                     </li>
@@ -248,7 +248,7 @@ export const TodoList = () => {
             </div>
           </div>
           {/* TO-DO items left */}
-          <div className="row">
+          <div className="row py-4">
             <div className="col">
               <p>
                 {userData.todos.length} item
